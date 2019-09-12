@@ -13,6 +13,8 @@ headerScript = ""
 headerScriptFound = False
 counter = {}
 env = {} # Environment variables, set by setenv command
+systemFiles = []
+vendorFiles = []
 
 # Parse args
 if len(sys.argv) == 1: 
@@ -40,6 +42,7 @@ header = utils.loadPart(inputFile, 0, HEADER_SIZE)
 utils.copyPart(inputFile, os.path.join(outputDirectory, "~header"), 0, HEADER_SIZE)
 
 offset = header.find('\xff'.encode(encoding='iso-8859-1'))
+print (offset)
 if offset != -1:
 	headerScript = header[:offset].decode()
 	headerScriptFound = True
@@ -79,6 +82,55 @@ for line in headerScript.splitlines():
 		params = utils.processFilePartLoad(line)
 		offset =  params["offset"]
 		size =  params["size"]
+
+	if re.match("^sparse_write", line):
+		line = utils.applyEnv(line, env)
+		params = utils.processSparseWrite(line)
+
+		if params:
+			if params["flash_type"] == "mmc":
+
+				if not params["partition_name"] in counter:
+					counter[params["partition_name"]] = 0
+				counter[params["partition_name"]] += 1
+
+				outputChunkSimgFile = os.path.join(outputDirectory, params["partition_name"] + str(counter[params["partition_name"]]) + ".simg")
+				print ("[i] Partition: {}\tOffset: {}\tSize {} ({}) -> {}".format(params["partition_name"], offset, size, utils.sizeStr(int(size, 16)), outputChunkSimgFile))
+				utils.copyPart(inputFile, outputChunkSimgFile, int(offset, 16), int(size, 16))
+
+				if params["partition_name"] == "system":
+					systemFiles.append(outputChunkSimgFile)
+				if params["partition_name"] == "vendor":
+					vendorFiles.append(outputChunkSimgFile)
+				# delete chunk
+				#os.remove(outputChunkSimgFile)
+				#os.remove(outputChunkImgFile)
+
+	if re.match("^%", line):
+		print("the last line! systemParts: {} vendorParts: {}".format(counter["system"],counter["vendor"]))
+		if counter["system"] > 1:
+			infiles = ""
+			for fname in systemFiles:
+				infiles = infiles + " " + fname
+			print(infiles)
+			outputFile = os.path.join(outputDirectory, "system_ex.img")
+			os.system('simg2img {} {}'.format(infiles, outputFile))
+		else:
+			outputFile = systemFiles[0]
+		outputFile2 = os.path.join(outputDirectory, "system.simg")
+		os.system('img2simg {} {}'.format(outputFile, outputFile2))
+
+		if counter["vendor"] > 1:
+			infiles = ""
+			for fname in vendorFiles:
+				infiles = infiles + " " + fname
+			print(infiles)
+			outputFile = os.path.join(outputDirectory, "vendor_ex.img")
+			os.system('simg2img {} {}'.format(infiles, outputFile))
+		else:
+			outputFile = vendorFiles[0]
+		outputFile2 = os.path.join(outputDirectory, "vendor.simg")
+		os.system('img2simg {} {}'.format(outputFile, outputFile2))
 
 	if re.match("^store_secure_info", line):
 		line = utils.applyEnv(line, env)		

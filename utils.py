@@ -127,13 +127,13 @@ def alignFile(file, base = 0x1000):
 # unlzo
 # if NT then use ./bin/lzo.exe
 def unlzo(src, dest):
-	lzop = 'bin\\win32\\lzop.exe' if os.name == 'nt' else 'bin/linux-x86/lzop'
+	lzop = 'bin\\win32\\lzop.exe' if os.name == 'nt' else '/usr/bin/lzop'
 	os.system(lzop + ' -o {} -d {}'.format(dest, src))
 
 # lzo
 # if NT then use ./bin/lzo.exe
 def lzo(src, dest):
-	lzop = 'bin\\win32\\lzop.exe' if os.name == 'nt' else 'bin/linux-x86/lzop'
+	lzop = 'bin\\win32\\lzop.exe' if os.name == 'nt' else '/usr/bin/lzop'
 	os.system(lzop + ' -o {} -1 {}'.format(dest, src))
 
 # Calculate crc32
@@ -177,6 +177,11 @@ def processStoreSecureInfo(line):
 def processStoreNuttxConfig(line):
 	args = parceArgs(line)
 	return {'cmd': args[0], 'partition_name': args[1], 'addr': args[2]}
+
+#sparse_write [flash_type] [dram_addr] [partitionname] [image_size]
+def processSparseWrite(line):
+	args = parceArgs(line)
+	return {'cmd': args[0], 'flash_type': args[1], 'addr': args[2], 'partition_name': args[3], 'image_size': args[4]}
 
 def processMmc(line):
 	args = parceArgs(line)
