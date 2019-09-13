@@ -5,7 +5,7 @@ import string
 import binascii
 import math
 import ctypes
-
+import glob
 B  = 2**00
 KB = 2**10
 MB = 2**20
@@ -77,6 +77,18 @@ def splitFile(file, destdir, chunksize):
 	assert len(chunks) <= 9999			
 	return chunks
 
+
+def createChunkFile(file, destdir, chunksize):
+	#create chunk files
+	#simg2simg system.simg systemchunk 157286400
+	print("system file name {}".format(file))
+	print("dest dir {}".format(destdir))
+	os.system("simg2simg {} {} {}".format(file, os.path.join(destdir,"systemChunk"), chunksize))
+	strPath = os.path.join(destdir,"systemChunk*")
+	print(strPath)
+	chunks = sorted(glob.glob(strPath))
+	print(chunks)
+	return chunks
 # Append src file to dest file
 # bufsize - chunk size
 def appendFile(src, dest, bufsize = 16 * MB):

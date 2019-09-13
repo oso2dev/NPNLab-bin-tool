@@ -12,6 +12,13 @@
             "args" : ["configs/cv358-full.ini"]
         },
         {
+            "name": "Python: pack.py test358",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pack.py",
+            "args" : ["configs/cv358-enable-uart.ini"]
+        },
+        {
             "name": "Python: unpack.py cv358",
             "type": "python",
             "request": "launch",
