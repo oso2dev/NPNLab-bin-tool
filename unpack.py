@@ -108,29 +108,31 @@ for line in headerScript.splitlines():
 
 	if re.match("^%", line):
 		print("the last line! systemParts: {} vendorParts: {}".format(counter["system"],counter["vendor"]))
-		if counter["system"] > 1:
+		if counter["system"] > 0:
 			infiles = ""
 			for fname in systemFiles:
 				infiles = infiles + " " + fname
 			print(infiles)
 			outputFile = os.path.join(outputDirectory, "system_ex.img")
 			os.system('simg2img {} {}'.format(infiles, outputFile))
-		else:
-			outputFile = systemFiles[0]
-		outputFile2 = os.path.join(outputDirectory, "system.simg")
-		os.system('img2simg {} {}'.format(outputFile, outputFile2))
+		#else:
+		#	outputFile = os.path.join(outputDirectory, "system_ex.img")
+		#	os.system('simg2img {} {}'.format(infiles, outputFile))
 
-		if counter["vendor"] > 1:
+			outputFile2 = os.path.join(outputDirectory, "system.simg")
+			os.system('img2simg {} {}'.format(outputFile, outputFile2))
+
+		if counter["vendor"] > 0:
 			infiles = ""
 			for fname in vendorFiles:
 				infiles = infiles + " " + fname
 			print(infiles)
 			outputFile = os.path.join(outputDirectory, "vendor_ex.img")
 			os.system('simg2img {} {}'.format(infiles, outputFile))
-		else:
-			outputFile = vendorFiles[0]
-		outputFile2 = os.path.join(outputDirectory, "vendor.simg")
-		os.system('img2simg {} {}'.format(outputFile, outputFile2))
+		#else:
+		#	outputFile = vendorFiles[0]
+			outputFile2 = os.path.join(outputDirectory, "vendor.simg")
+			os.system('img2simg {} {}'.format(outputFile, outputFile2))
 
 	if re.match("^store_secure_info", line):
 		line = utils.applyEnv(line, env)		

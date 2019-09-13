@@ -119,8 +119,9 @@ def loadPart(file, offset, size):
 # file - input file to align
 # base - alignment base
 def alignFile(file, base = 0x1000):
-	result = base - os.path.getsize(file) % base
+	result = os.path.getsize(file) % base
 	if result:
+		result = base - result
 		with open(file, 'ab') as f:
 			f.write(('\xff' * result).encode(encoding='iso-8859-1'))
 
@@ -294,6 +295,13 @@ def directive(header, dramBufAddr, useHexValuesPrefix):
 		else:
 			header.write('mmc unlzo.cont {} {} {} {}\n'.format(memoryOffset, size, name, emptySkip).encode())
 
+	# sparse_write mmc 0x30200000 vendor $(filesize)
+	def sparse_write_mmc(name, size, memoryOffset=dramBufAddr, emptySkip = 1):
+		if (useHexValuesPrefix):
+			header.write('sparse_write mmc 0x{} {} $(filesize)\n'.format(memoryOffset, name).encode())
+		else:
+			header.write('sparse_write mmc {} {} $(filesize)\n'.format(memoryOffset, name).encode())
+
 	# mmc write.p addr partition_name size [empty_skip:0-disable,1-enable]
 	def write_p(name, size, memoryOffset=dramBufAddr, emptySkip = 1):
 		if (useHexValuesPrefix):
@@ -331,6 +339,7 @@ def directive(header, dramBufAddr, useHexValuesPrefix):
 	directive.unlzo = unlzo	
 	directive.unlzo_cont = unlzo_cont	
 	directive.write_p = write_p	
+	directive.sparse_write_mmc = sparse_write_mmc	
 	directive.store_secure_info = store_secure_info	
 	directive.store_nuttx_config = store_nuttx_config	
 	directive.write_boot = write_boot	
